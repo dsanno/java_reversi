@@ -1,0 +1,35 @@
+#
+#  File:          Makefile
+#
+#  Author:        Daiki Sanno
+#
+#  Created:       November 25, 2006
+#
+#  Modified:      November 25, 2006
+#
+
+TARGET = reversi
+
+SRCS = \
+	main.c \
+	board.c \
+	com.c \
+	evaluator.c \
+	opening.c \
+	hash.c \
+
+OBJS = $(SRCS:.c=.o)
+
+CC = gcc
+INC = 
+DEFS = 
+OPTS = 
+CFLAGS = $(INC) $(DEF) $(OPTS)
+LDFLAGS = 
+
+all : $(TARGET)
+clean :
+	$(RM) $(OBJS)
+
+$(TARGET) : $(OBJS)
+	$(CC) -o $(TARGET) $(CFLAGS) $(OBJS) $(LDFLAGS)

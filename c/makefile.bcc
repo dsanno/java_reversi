@@ -1,0 +1,39 @@
+#
+#  File:          Makefile
+#
+#  Author:        Daiki Sanno
+#
+#  Created:       March 10, 2007
+#
+#  Modified:      March 10, 2007
+#
+
+TARGET = reversi
+
+SRCS = \
+	main.c \
+	board.c \
+	com.c \
+	evaluator.c \
+	opening.c \
+	hash.c \
+
+OBJS = $(SRCS:.c=.obj)
+
+CC = bcc32
+INC = 
+DEFS = 
+OPTS = 
+CFLAGS = $(INC) $(DEF) $(OPTS)
+LDFLAGS = 
+
+
+$(TARGET) : $(OBJS)
+	$(CC) -e$(TARGET) $(CFLAGS) $(OBJS) $(LDFLAGS)
+.cpp.obj:
+	$(CC) $(CFLAGS) -c $<
+
+all : $(TARGET)
+clean :
+	del $(OBJS) $(TARGET).tds
+
