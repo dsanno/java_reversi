@@ -1,7 +1,5 @@
-import java.awt.Color;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;

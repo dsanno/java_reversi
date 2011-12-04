@@ -6,8 +6,6 @@ import java.awt.Image;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import java.io.InputStream;
-import java.io.IOException;
 
 public class JDolphin extends Applet {
     private static final long serialVersionUID = 1L;
@@ -43,8 +41,8 @@ public class JDolphin extends Applet {
 		{6, 12, 14, 2, 8},
 		{8, 14, 16, 2, 16},
 		{8, 14, 16, 2, 12},
-		{8, 14, 16, 2, 8},
 		{10, 16, 18, 2, 16},
+		{8, 14, 16, 2, 8},
 		{10, 16, 18, 2, 12},
 		{10, 16, 18, 2, 8},
 		{10, 16, 18, 1, 8}
@@ -318,7 +316,7 @@ public class JDolphin extends Applet {
         mActivePlayer = PLAYER_BLACK;
         mCom.setLevel(sLevelParam[mLevel][0], sLevelParam[mLevel][1], sLevelParam[mLevel][2]);
         mCom.setRandom(sLevelParam[mLevel][3], sLevelParam[mLevel][4]);
-    	mCom.setOpeining(true);
+    	mCom.setOpeining((mLevel / 2) * 2);
         removeMouseListener(mMouseListener);
         removeMouseMotionListener(mMouseMotionListener);
         mMouseListener = new MouseListener() {

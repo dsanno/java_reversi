@@ -48,7 +48,7 @@ public class Com {
     private Evaluator mEvaluator;
     private Opening mOpening;
     private Hash mHash;
-    private boolean mUseOpening;
+    private int mOpeningDepth;
     private int mMiddleDepth;
     private int mWLDDepth;
     private int mExactDepth;
@@ -66,7 +66,7 @@ public class Com {
         mOpening = opening;
         mHash = new Hash(HASH_SIZE);
         mHash.clear();
-        mUseOpening = false;
+        mOpeningDepth = 0;
         mMiddleDepth = 2;
         mWLDDepth = 2;
         mExactDepth = 2;
@@ -95,8 +95,8 @@ public class Com {
         mRandomRatio = ratio;
     }
 
-    public void setOpeining(boolean useOpening) {
-        mUseOpening = useOpening;
+    public void setOpeining(int depth) {
+        mOpeningDepth = depth;
     }
 
     public int getNextMove(Board board, int color) {
@@ -159,7 +159,8 @@ public class Com {
         int count = 0;
         final int minRandom = Evaluator.DISK_VALUE * 4;
         final int bound = Evaluator.DISK_VALUE * 2;
-        if (!mUseOpening || mOpening == null) {
+        int depth = mBoard.countDisks(Board.BLACK) + mBoard.countDisks(Board.WHITE) - 4;
+        if (mOpeningDepth <= depth || mOpening == null) {
             return bestMove;
         }
         positionValue = mOpening.get(mBoard, color);
@@ -200,7 +201,6 @@ public class Com {
         int bestValue = -MAX_VALUE;
         int bestMove;
         int secondValue = -MAX_VALUE;
-        int secondMove;
         SortList[] info = new SortList[TEMP_MOVE_ARRAY_NUM];
         int infoCount;
 
@@ -211,7 +211,6 @@ public class Com {
             return info[0].mMove.mPos;
         }
         bestMove = info[0].mMove.mPos;
-        secondMove = bestMove;
         MoveList current;
         for (int i = 0; i < infoCount; i++) {
             current = info[i].mMove;
@@ -222,12 +221,10 @@ public class Com {
             current.recover();
             info[i].mValue = value;
             if (value > bestValue) {
-                secondMove = bestMove;
                 secondValue = bestValue;
                 bestMove = current.mPos;
                 bestValue = value;
             } else if (value > secondValue) {
-                secondMove = current.mPos;
                 secondValue = value;
             }
         }
