@@ -5,7 +5,7 @@
 #include <string.h>
 
 /* 評価パラメータ更新の度合い */
-#define UPDATE_RATIO 0.05
+#define UPDATE_RATIO 0.02
 
 /* パターンの最大評価値 */
 #define MAX_PATTERN_VALUE (DISK_VALUE * 20)
@@ -457,6 +457,23 @@ static void Evaluator_UpdatePattern(Evaluator *self, int in_stage, int in_patter
 {
 	int diff;
 
+#if 1
+	if (self->PatternNum[in_stage][in_pattern][in_id] > MIN_FREQUENCY) {
+		diff = (int)(self->PatternSum[in_stage][in_pattern][in_id] / self->PatternNum[in_stage][in_pattern][in_id] * UPDATE_RATIO);
+		if (MAX_PATTERN_VALUE - diff < self->Value[in_stage][in_pattern][in_id]) {
+			self->Value[in_stage][in_pattern][in_id] = MAX_PATTERN_VALUE;
+		} else if (-MAX_PATTERN_VALUE - diff > self->Value[in_stage][in_pattern][in_id]) {
+			self->Value[in_stage][in_pattern][in_id] = -MAX_PATTERN_VALUE;
+		} else {
+			self->Value[in_stage][in_pattern][in_id] += diff;
+		}
+		{
+			int n = self->PatternNum[in_stage][in_pattern][in_id];
+			self->PatternNum[in_stage][in_pattern][in_id] *= 0.5;
+			self->PatternSum[in_stage][in_pattern][in_id] *= (double)self->PatternNum[in_stage][in_pattern][in_id] / n;
+		}
+	}
+#else
 	if (self->PatternNum[in_stage][in_pattern][in_id] > MIN_FREQUENCY) {
 		diff = (int)(self->PatternSum[in_stage][in_pattern][in_id] / self->PatternNum[in_stage][in_pattern][in_id] * UPDATE_RATIO);
 	} else {
@@ -471,6 +488,7 @@ static void Evaluator_UpdatePattern(Evaluator *self, int in_stage, int in_patter
 	}
 	self->PatternNum[in_stage][in_pattern][in_id] = 0;
 	self->PatternSum[in_stage][in_pattern][in_id] = 0;
+#endif
 }
 
 void Evaluator_Update(Evaluator *self)

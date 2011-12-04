@@ -13,7 +13,7 @@
 #define MPC_FILE "mpc.dat"
 #define MPC_LEARN_FILE "mpc_learn.dat"
 #define EVALUATOR_FILE "eval.dat"
-#define EVALUATOR_FILE_2 "eval_20111119.dat"
+#define EVALUATOR_FILE_2 "eval_20111202.dat"
 #define GAME_INFO_FILE "game_info.dat"
 #define OPENING_TRANSCRIPT_FILE "open_trans.txt"
 #define OPENING_FILE "open.dat"
@@ -452,8 +452,8 @@ static void compare_com(Board *board, Evaluator *evaluator, Com *com, Com *com2)
 		{6, 12, 14, 2, 8},
 		{8, 14, 16, 2, 16},
 		{8, 14, 16, 2, 12},
-		{8, 14, 16, 2, 8},
 		{10, 16, 18, 2, 16},
+		{8, 14, 16, 2, 8},
 		{10, 16, 18, 2, 12},
 		{10, 16, 18, 2, 8},
 		{10, 16, 18, 1, 8}
@@ -633,12 +633,13 @@ static void compare_evaluator(Board *board, Com *com, Com *com2)
 	int move, value;
 	int moved;
 	int count;
+	const int round_max = 100;
 	LevelInfo info[] = {
 		{2, 8, 8, 2, 8},
 		{4, 10, 12, 2, 8},
 		{6, 12, 14, 2, 8},
 		{8, 14, 16, 2, 8},
-//		{10, 16, 18, 2, 8}
+		{10, 16, 18, 2, 8}
 	};
 	CompareResult result[100];
 
@@ -651,9 +652,10 @@ static void compare_evaluator(Board *board, Com *com, Com *com2)
 		result[i].lose = 0;
 		result[i].draw= 0;
 	}
-	for (round = 0; round < 20; round++) {
-		for (i = 0; i < array_num(info); i++) {
-			printf("%d / %d  %d / %d      \r", round, 20, i, array_num(info));
+	printf("Level Ratio Win Lose Draw\n");
+	for (i = 0; i < array_num(info); i++) {
+		for (round = 0; round < round_max; round++) {
+			printf("%d / %d  %d / %d      \r", round, round_max, i, array_num(info));
 			Com_SetLevel(com, info[i].middle, info[i].exact, info[i].wld);
 			Com_SetRandom(com, info[i].random, info[i].ratio);
 			Com_SetLevel(com2, info[i].middle, info[i].exact, info[i].wld);
@@ -683,9 +685,6 @@ static void compare_evaluator(Board *board, Com *com, Com *com2)
 			} else {
 				result[i].draw++;
 			}
-		}
-		for (i = 0; i < array_num(info); i++) {
-			printf("%d / %d  %d / %d      \r", round, 20, i, array_num(info));
 			Com_SetLevel(com, info[i].middle, info[i].exact, info[i].wld);
 			Com_SetRandom(com, info[i].random, info[i].ratio);
 			Com_SetLevel(com2, info[i].middle, info[i].exact, info[i].wld);
@@ -716,13 +715,128 @@ static void compare_evaluator(Board *board, Com *com, Com *com2)
 				result[i].draw++;
 			}
 		}
-	}
-	printf("Level Ratio Win Lose Draw\n");
-	for (i = 0; i < array_num(info); i++) {
 		printf("%d %.3f %d %d %d : {%d, %d, %d, %d, %d}\n", i,
 			((double)(result[i].win * 2 + result[i].draw)) / (result[i].win + result[i].lose + result[i].draw) * 0.5,
 			result[i].win, result[i].lose, result[i].draw,
 			info[i].middle, info[i].exact, info[i].wld, info[i].random, info[i].ratio);
+	}
+	printf("èIóπÇµÇ‹ÇµÇΩ                    \n");
+}
+
+static void compare_mpc(Board *board, Com *com, Com *com2)
+{
+	int i, round;
+	int move, value;
+	int moved;
+	int count;
+	int time1;
+	int time2;
+	int clock_start;
+	int clock_end;
+	const int round_max = 30;
+	int depth_diff;
+	LevelInfo info[] = {
+		{2, 8, 8, 2, 8},
+		{4, 10, 12, 2, 8},
+		{6, 12, 14, 2, 8},
+		{8, 14, 16, 2, 8},
+		{10, 16, 18, 2, 8}
+	};
+	CompareResult result[100];
+
+	Com_SetOpening(com, 0);
+	Com_LoadMPCInfo(com, MPC_FILE);
+	Com_SetOpening(com2, 0);
+	Com_LoadMPCInfo(com2, MPC_LEARN_FILE);
+	for (i = 0; i < 100; i++) {
+		result[i].win = 0;
+		result[i].lose = 0;
+		result[i].draw= 0;
+	}
+	printf("Level Ratio Win Lose Draw\n");
+	for (depth_diff = 0; depth_diff < 3; depth_diff++) {
+	for (i = 0; i < array_num(info); i++) {
+		time1 = 0;
+		time2 = 0;
+		for (round = 0; round < round_max; round++) {
+			printf("%d / %d  %d / %d      \r", round, round_max, i, array_num(info));
+			Com_SetLevel(com, info[i].middle + depth_diff, info[i].exact, info[i].wld);
+			Com_SetRandom(com, info[i].random, info[i].ratio);
+			Com_SetLevel(com2, info[i].middle, info[i].exact, info[i].wld);
+			Com_SetRandom(com2, info[i].random, info[i].ratio);
+			Board_Clear(board);
+			while (1) {
+				moved = 0;
+				if (Board_CanPlay(board, BLACK)) {
+					clock_start = clock();
+					move = Com_NextMove(com, board, BLACK, &value);
+					clock_end = clock();
+					time1 += clock_end - clock_start;
+					Board_Flip(board, BLACK, move);
+					moved = 1;
+				}
+				if (Board_CanPlay(board, WHITE)) {
+					clock_start = clock();
+					move = Com_NextMove(com2, board, WHITE, &value);
+					clock_end = clock();
+					time2 += clock_end - clock_start;
+					Board_Flip(board, WHITE, move);
+					moved = 1;
+				}
+				if (!moved) {
+					break;
+				}
+			}
+			count = Board_CountDisks(board, BLACK) - Board_CountDisks(board, WHITE);
+			if (count > 0) {
+				result[i].win++;
+			} else if (count < 0) {
+				result[i].lose++;
+			} else {
+				result[i].draw++;
+			}
+			Com_SetLevel(com, info[i].middle, info[i].exact, info[i].wld);
+			Com_SetRandom(com, info[i].random, info[i].ratio);
+			Com_SetLevel(com2, info[i].middle, info[i].exact, info[i].wld);
+			Com_SetRandom(com2, info[i].random, info[i].ratio);
+			Board_Clear(board);
+			while (1) {
+				moved = 0;
+				if (Board_CanPlay(board, BLACK)) {
+					clock_start = clock();
+					move = Com_NextMove(com2, board, BLACK, &value);
+					clock_end = clock();
+					time2 += clock_end - clock_start;
+					Board_Flip(board, BLACK, move);
+					moved = 1;
+				}
+				if (Board_CanPlay(board, WHITE)) {
+					clock_start = clock();
+					move = Com_NextMove(com, board, WHITE, &value);
+					clock_end = clock();
+					time1 += clock_end - clock_start;
+					Board_Flip(board, WHITE, move);
+					moved = 1;
+				}
+				if (!moved) {
+					break;
+				}
+			}
+			count = Board_CountDisks(board, BLACK) - Board_CountDisks(board, WHITE);
+			if (count < 0) {
+				result[i].win++;
+			} else if (count > 0) {
+				result[i].lose++;
+			} else {
+				result[i].draw++;
+			}
+		}
+		printf("%d %.3f %d %d %d : {%d, %d, %d, %d, %d} {%d} {%.3f, %.3f}\n", i,
+			((double)(result[i].win * 2 + result[i].draw)) / (result[i].win + result[i].lose + result[i].draw) * 0.5,
+			result[i].win, result[i].lose, result[i].draw,
+			info[i].middle, info[i].exact, info[i].wld, info[i].random, info[i].ratio,
+			depth_diff, (double)time1 / round_max / 1000, (double)time2 / round_max / 1000);
+	}
 	}
 	printf("èIóπÇµÇ‹ÇµÇΩ                    \n");
 }
@@ -877,7 +991,7 @@ static void learn3(Board *board, Evaluator *evaluator, char *in_file_name)
 	int turn;
 	int result;
 	int pos;
-	const int repeat = 50;
+	const int repeat = 100;
 	int i;
 
 	root_node = calloc(sizeof(GameNode), 60 * 300000);
@@ -1349,6 +1463,11 @@ int main(int argc, char **argv)
 			learn3(param.Board, param.Evaluator, GAME_INFO_FILE);
 		} else if (!strcmp(buffer, "a")) {
 			compare_evaluator(param.Board, param.Com, param.Com3);
+		} else if (!strcmp(buffer, "b")) {
+			learn3(param.Board, param.Evaluator, GAME_INFO_FILE);
+			compare_evaluator(param.Board, param.Com, param.Com3);
+		} else if (!strcmp(buffer, "c")) {
+			compare_mpc(param.Board, param.Com, param.Com2);
 		} else if (!strcmp(buffer, "0")) {
 			self_play(param.Board, param.Evaluator, param.Com, GAME_INFO_FILE);
 			learn2(param.Board, param.Evaluator, GAME_INFO_FILE);
