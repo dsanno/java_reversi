@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2011 Daiki Sanno
+ */
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.BufferUnderflowException;

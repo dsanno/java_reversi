@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 2011 Daiki Sanno
+ */
 
 public class Hash {
     public static class Info {

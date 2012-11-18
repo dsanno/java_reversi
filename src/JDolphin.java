@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2011 Daiki Sanno
+ */
+
 import java.applet.Applet;
 import java.awt.Color;
 import java.awt.Font;

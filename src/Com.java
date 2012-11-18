@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 2011 Daiki Sanno
+ */
 
 public class Com {
     private static final int MAX_VALUE = Evaluator.DISK_VALUE * 200;
